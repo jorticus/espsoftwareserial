@@ -137,7 +137,7 @@ void SoftwareSerial::enableRx(bool on) {
             m_rxCurBit = m_dataBits;
             // Init to stop bit level and current cycle
             m_isrLastCycle = (ESP.getCycleCount() | 1) ^ m_invert;
-            attachInterruptArg(digitalPinToInterrupt(m_rxPin), (void (*)())(rxBitISR), this, CHANGE);
+            attachInterruptArg(digitalPinToInterrupt(m_rxPin), (void (*)(void*))(rxBitISR), this, CHANGE);
         }
         else {
             detachInterrupt(digitalPinToInterrupt(m_rxPin));
