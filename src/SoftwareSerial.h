@@ -27,6 +27,7 @@ Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
 #include "circular_queue/circular_queue.h"
 #include <Stream.h>
 #include <functional>
+#include <Serial9b.h>
 
 /// If only one tx or rx wanted then use this as parameter for the unused pin.
 constexpr int SW_SERIAL_UNUSED_PIN = -1;
@@ -45,7 +46,12 @@ enum SoftwareSerialConfig {
 /// Instead, the begin() function handles pin assignments and logic inversion.
 /// It also has optional input buffer capacity arguments for byte buffer and ISR bit buffer.
 /// Bitrates up to at least 115200 can be used.
-class SoftwareSerial {
+class SoftwareSerial : public Stream9b {
+public: // Stream9b
+
+    int16_t read9b() override { return read(); }
+    void write9b(uint16_t b) override { write(b); }
+
 public:
     SoftwareSerial();
     SoftwareSerial(const SoftwareSerial&) = delete;
@@ -62,20 +68,22 @@ public:
 
     bool overflow();
 
-    int available() ;
+    int available() override;
     int availableForWrite() {
         if (!m_txValid) return 0;
         return 1;
     }
-    int peek() ;
-    int read() ;
+    int peek() override;
+    int read() override;
     /// The readBytes functions are non-waiting, there is no timeout.
     size_t readBytes(uint16_t* buffer, size_t size) ;
     /// The readBytes functions are non-waiting, there is no timeout.
     size_t readBytes(char* buffer, size_t size)  {
         return readBytes(reinterpret_cast<uint16_t*>(buffer), size);
     }
-    void flush() ;
+    void flush() override;
+
+    size_t write(uint8_t b) override { return write((uint16_t)b); }
     size_t write(uint16_t byte) ;
     size_t write(const uint16_t* buffer, size_t size) ;
     // size_t write(const char* buffer, size_t size) {
